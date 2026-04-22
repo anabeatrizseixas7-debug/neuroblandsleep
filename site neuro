@@ -1,1 +1,445 @@
-# neuroblandsleep
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroBlandSleep+ Feedback</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    .star-btn { transition: all 0.2s ease; cursor: pointer; }
+    .star-btn:hover { transform: scale(1.2); }
+    .star-btn.active svg { fill: currentColor; }
+    .tab-btn { transition: all 0.3s ease; }
+    .tab-btn.active { transform: translateY(-2px); }
+    .fade-in { animation: fadeIn 0.4s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .pulse-glow { animation: pulseGlow 2.5s ease-in-out infinite; }
+    @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.15); } 50% { box-shadow: 0 0 35px rgba(99, 102, 241, 0.3); } }
+    .glass-card { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    input:focus, textarea:focus, select:focus { outline: none; }
+    .toast-enter { animation: toastIn 0.3s ease forwards; }
+    .toast-exit { animation: toastOut 0.3s ease forwards; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
+    .submit-loading { pointer-events: none; opacity: 0.7; }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto" style="background: linear-gradient(135deg, #0f0b2e 0%, #1a1145 30%, #0d1f3c 60%, #091428 100%); font-family: 'DM Sans', sans-serif;"><!-- Toast container -->
+   <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div><!-- Header -->
+   <header class="relative overflow-hidden">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 60%);"></div>
+    <div class="relative max-w-4xl mx-auto px-4 pt-10 pb-8 text-center"><!-- Logo -->
+     <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-5 pulse-glow" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+      <svg width="44" height="44" viewbox="0 0 44 44" fill="none"><ellipse cx="22" cy="22" rx="18" ry="10" stroke="white" stroke-width="2.5" fill="none" /> <path d="M10 22 Q16 16, 22 18 Q28 16, 34 22" stroke="white" stroke-width="2" fill="none" /> <circle cx="16" cy="21" r="2" fill="rgba(255,255,255,0.6)" /> <circle cx="28" cy="21" r="2" fill="rgba(255,255,255,0.6)" /> <path d="M18 28 Q22 31, 26 28" stroke="rgba(165,180,252,0.6)" stroke-width="1.5" fill="none" />
+      </svg>
+     </div>
+     <h1 id="main-title" class="text-3xl md:text-4xl font-bold mb-2" style="font-family: 'Playfair Display', serif; color: #e0e7ff;">NeuroBlandSleep+</h1>
+     <p id="main-subtitle" class="text-lg mb-3" style="color: #a5b4fc;">Central de Feedback</p>
+     <p id="intro-text" class="text-sm max-w-md mx-auto" style="color: #7c85b3;">Sua opinião é essencial para continuarmos melhorando sua experiência de sono</p>
+    </div>
+   </header><!-- Tabs -->
+   <nav class="max-w-4xl mx-auto px-4 mb-6">
+    <div class="flex gap-2 overflow-x-auto pb-2 justify-center flex-wrap" role="tablist"><button onclick="switchTab('survey')" id="tab-survey" class="tab-btn active flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all" role="tab" aria-selected="true" style="background: rgba(99,102,241,0.25); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4);"> <i data-lucide="clipboard-list" style="width:16px;height:16px;"></i> Pesquisa </button> <button onclick="switchTab('complaint')" id="tab-complaint" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all" role="tab" aria-selected="false" style="background: rgba(255,255,255,0.05); color: #7c85b3; border: 1px solid rgba(255,255,255,0.08);"> <i data-lucide="alert-circle" style="width:16px;height:16px;"></i> Reclamação </button> <button onclick="switchTab('suggestion')" id="tab-suggestion" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all" role="tab" aria-selected="false" style="background: rgba(255,255,255,0.05); color: #7c85b3; border: 1px solid rgba(255,255,255,0.08);"> <i data-lucide="lightbulb" style="width:16px;height:16px;"></i> Sugestão </button> <button onclick="switchTab('praise')" id="tab-praise" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all" role="tab" aria-selected="false" style="background: rgba(255,255,255,0.05); color: #7c85b3; border: 1px solid rgba(255,255,255,0.08);"> <i data-lucide="heart" style="width:16px;height:16px;"></i> Elogio </button> <button onclick="switchTab('history')" id="tab-history" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all" role="tab" aria-selected="false" style="background: rgba(255,255,255,0.05); color: #7c85b3; border: 1px solid rgba(255,255,255,0.08);"> <i data-lucide="history" style="width:16px;height:16px;"></i> Histórico </button>
+    </div>
+   </nav><!-- Content -->
+   <main class="max-w-2xl mx-auto px-4 pb-16"><!-- SURVEY TAB -->
+    <section id="panel-survey" class="fade-in" role="tabpanel">
+     <div class="glass-card rounded-2xl p-6 md:p-8" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">
+      <h2 class="text-xl font-bold mb-6" style="color: #e0e7ff; font-family: 'Playfair Display', serif;"><i data-lucide="clipboard-list" style="width:20px;height:20px;display:inline;vertical-align:middle;color:#6366f1;"></i> Pesquisa de Satisfação</h2>
+      <form id="survey-form" onsubmit="handleSurveySubmit(event)"><!-- Name & Email -->
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div><label for="survey-name" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">Nome</label> <input type="text" id="survey-name" required placeholder="Seu nome" class="w-full px-4 py-2.5 rounded-xl text-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;">
+        </div>
+        <div><label for="survey-email" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">E-mail</label> <input type="email" id="survey-email" required placeholder="seu@email.com" class="w-full px-4 py-2.5 rounded-xl text-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;">
+        </div>
+       </div><!-- Usage time -->
+       <div class="mb-6"><label for="survey-usage" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">Há quanto tempo usa o NeuroBlandSleep+?</label> <select id="survey-usage" required class="w-full px-4 py-2.5 rounded-xl text-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;"> <option value="" style="background:#1a1145;">Selecione...</option> <option value="menos_1_mes" style="background:#1a1145;">Menos de 1 mês</option> <option value="1_3_meses" style="background:#1a1145;">1 a 3 meses</option> <option value="3_6_meses" style="background:#1a1145;">3 a 6 meses</option> <option value="6_12_meses" style="background:#1a1145;">6 a 12 meses</option> <option value="mais_1_ano" style="background:#1a1145;">Mais de 1 ano</option> </select>
+       </div><!-- Star Ratings -->
+       <div class="space-y-5 mb-6">
+        <div class="rating-group" data-key="comfort"><label class="block text-sm font-medium mb-2" style="color: #a5b4fc;">Conforto</label>
+         <div class="flex gap-1" id="stars-comfort"></div>
+        </div>
+        <div class="rating-group" data-key="effectiveness"><label class="block text-sm font-medium mb-2" style="color: #a5b4fc;">Eficácia para dormir</label>
+         <div class="flex gap-1" id="stars-effectiveness"></div>
+        </div>
+        <div class="rating-group" data-key="design"><label class="block text-sm font-medium mb-2" style="color: #a5b4fc;">Design do produto</label>
+         <div class="flex gap-1" id="stars-design"></div>
+        </div>
+        <div class="rating-group" data-key="value"><label class="block text-sm font-medium mb-2" style="color: #a5b4fc;">Custo-benefício</label>
+         <div class="flex gap-1" id="stars-value"></div>
+        </div>
+        <div class="rating-group" data-key="overall"><label class="block text-sm font-medium mb-2" style="color: #a5b4fc;">Satisfação geral</label>
+         <div class="flex gap-1" id="stars-overall"></div>
+        </div>
+       </div><!-- Recommend -->
+       <div class="mb-6"><label class="block text-sm font-medium mb-2" style="color: #a5b4fc;">Recomendaria a um amigo?</label>
+        <div class="flex gap-3"><label class="flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer transition-all" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #c7d2fe;"> <input type="radio" name="recommend" value="sim" required class="accent-indigo-500"> Sim </label> <label class="flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer transition-all" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #c7d2fe;"> <input type="radio" name="recommend" value="talvez" class="accent-indigo-500"> Talvez </label> <label class="flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer transition-all" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #c7d2fe;"> <input type="radio" name="recommend" value="nao" class="accent-indigo-500"> Não </label>
+        </div>
+       </div><!-- Comment -->
+       <div class="mb-6"><label for="survey-message" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">Comentário adicional (opcional)</label> <textarea id="survey-message" rows="3" placeholder="Conte-nos mais sobre sua experiência..." class="w-full px-4 py-2.5 rounded-xl text-sm resize-none" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;"></textarea>
+       </div><button type="submit" id="survey-submit" class="w-full py-3 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 flex items-center justify-center gap-2" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);"> <i data-lucide="send" style="width:16px;height:16px;"></i> <span>Enviar Pesquisa</span> </button>
+      </form>
+     </div>
+    </section><!-- COMPLAINT TAB -->
+    <section id="panel-complaint" class="fade-in hidden" role="tabpanel">
+     <div class="glass-card rounded-2xl p-6 md:p-8" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">
+      <h2 class="text-xl font-bold mb-6" style="color: #e0e7ff; font-family: 'Playfair Display', serif;"><i data-lucide="alert-circle" style="width:20px;height:20px;display:inline;vertical-align:middle;color:#f87171;"></i> Registrar Reclamação</h2>
+      <form id="complaint-form" onsubmit="handleGenericSubmit(event, 'reclamação')">
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div><label for="complaint-name" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">Nome</label> <input type="text" id="complaint-name" required placeholder="Seu nome" class="w-full px-4 py-2.5 rounded-xl text-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;">
+        </div>
+        <div><label for="complaint-email" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">E-mail</label> <input type="email" id="complaint-email" required placeholder="seu@email.com" class="w-full px-4 py-2.5 rounded-xl text-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;">
+        </div>
+       </div>
+       <div class="mb-4"><label for="complaint-message" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">Descreva sua reclamação</label> <textarea id="complaint-message" rows="5" required placeholder="Conte-nos o que aconteceu para que possamos resolver..." class="w-full px-4 py-2.5 rounded-xl text-sm resize-none" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;"></textarea>
+       </div><button type="submit" class="generic-submit w-full py-3 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 flex items-center justify-center gap-2" style="background: linear-gradient(135deg, #ef4444, #f87171);"> <i data-lucide="send" style="width:16px;height:16px;"></i> <span>Enviar Reclamação</span> </button>
+      </form>
+     </div>
+    </section><!-- SUGGESTION TAB -->
+    <section id="panel-suggestion" class="fade-in hidden" role="tabpanel">
+     <div class="glass-card rounded-2xl p-6 md:p-8" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">
+      <h2 class="text-xl font-bold mb-6" style="color: #e0e7ff; font-family: 'Playfair Display', serif;"><i data-lucide="lightbulb" style="width:20px;height:20px;display:inline;vertical-align:middle;color:#fbbf24;"></i> Enviar Sugestão</h2>
+      <form id="suggestion-form" onsubmit="handleGenericSubmit(event, 'sugestão')">
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div><label for="suggestion-name" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">Nome</label> <input type="text" id="suggestion-name" required placeholder="Seu nome" class="w-full px-4 py-2.5 rounded-xl text-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;">
+        </div>
+        <div><label for="suggestion-email" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">E-mail</label> <input type="email" id="suggestion-email" required placeholder="seu@email.com" class="w-full px-4 py-2.5 rounded-xl text-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;">
+        </div>
+       </div>
+       <div class="mb-4"><label for="suggestion-message" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">Sua sugestão</label> <textarea id="suggestion-message" rows="5" required placeholder="Que melhoria você gostaria de ver no NeuroBlandSleep+?" class="w-full px-4 py-2.5 rounded-xl text-sm resize-none" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;"></textarea>
+       </div><button type="submit" class="generic-submit w-full py-3 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 flex items-center justify-center gap-2" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);"> <i data-lucide="send" style="width:16px;height:16px;"></i> <span>Enviar Sugestão</span> </button>
+      </form>
+     </div>
+    </section><!-- PRAISE TAB -->
+    <section id="panel-praise" class="fade-in hidden" role="tabpanel">
+     <div class="glass-card rounded-2xl p-6 md:p-8" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">
+      <h2 class="text-xl font-bold mb-6" style="color: #e0e7ff; font-family: 'Playfair Display', serif;"><i data-lucide="heart" style="width:20px;height:20px;display:inline;vertical-align:middle;color:#f472b6;"></i> Enviar Elogio</h2>
+      <form id="praise-form" onsubmit="handleGenericSubmit(event, 'elogio')">
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div><label for="praise-name" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">Nome</label> <input type="text" id="praise-name" required placeholder="Seu nome" class="w-full px-4 py-2.5 rounded-xl text-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;">
+        </div>
+        <div><label for="praise-email" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">E-mail</label> <input type="email" id="praise-email" required placeholder="seu@email.com" class="w-full px-4 py-2.5 rounded-xl text-sm" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;">
+        </div>
+       </div>
+       <div class="mb-4"><label for="praise-message" class="block text-sm font-medium mb-1.5" style="color: #a5b4fc;">Seu elogio</label> <textarea id="praise-message" rows="5" required placeholder="Conte-nos o que você mais gosta no NeuroBlandSleep+!" class="w-full px-4 py-2.5 rounded-xl text-sm resize-none" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e0e7ff;"></textarea>
+       </div><button type="submit" class="generic-submit w-full py-3 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 flex items-center justify-center gap-2" style="background: linear-gradient(135deg, #ec4899, #f472b6);"> <i data-lucide="send" style="width:16px;height:16px;"></i> <span>Enviar Elogio</span> </button>
+      </form>
+     </div>
+    </section><!-- HISTORY TAB -->
+    <section id="panel-history" class="fade-in hidden" role="tabpanel">
+     <div class="glass-card rounded-2xl p-6 md:p-8" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">
+      <h2 class="text-xl font-bold mb-4" style="color: #e0e7ff; font-family: 'Playfair Display', serif;"><i data-lucide="history" style="width:20px;height:20px;display:inline;vertical-align:middle;color:#6366f1;"></i> Histórico de Feedbacks</h2>
+      <div id="history-empty" class="text-center py-12" style="color: #7c85b3;"><i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 12px;display:block;opacity:0.4;"></i>
+       <p class="text-sm">Nenhum feedback enviado ainda</p>
+      </div>
+      <div id="history-list" class="space-y-3"></div>
+     </div>
+    </section>
+   </main>
+  </div>
+  <script>
+  // State
+  let allData = [];
+  let ratings = { comfort: 0, effectiveness: 0, design: 0, value: 0, overall: 0 };
+  const currentRecordCount = () => allData.length;
+
+  const defaultConfig = {
+    app_title: 'NeuroBlandSleep+',
+    app_subtitle: 'Central de Feedback',
+    survey_intro: 'Sua opinião é essencial para continuarmos melhorando sua experiência de sono',
+    thank_you_message: 'Obrigado pelo seu feedback!',
+    background_color: '#0f0b2e',
+    surface_color: 'rgba(255,255,255,0.04)',
+    text_color: '#e0e7ff',
+    primary_action_color: '#6366f1',
+    secondary_action_color: '#a5b4fc',
+    font_family: 'DM Sans',
+    font_size: 14
+  };
+
+  // Build star ratings
+  function buildStars() {
+    ['comfort','effectiveness','design','value','overall'].forEach(key => {
+      const container = document.getElementById('stars-' + key);
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'star-btn' + (i <= ratings[key] ? ' active' : '');
+        btn.setAttribute('aria-label', `${i} estrela${i > 1 ? 's' : ''}`);
+        btn.style.color = i <= ratings[key] ? '#fbbf24' : '#4b5563';
+        btn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="${i <= ratings[key] ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+        btn.onclick = () => { ratings[key] = i; buildStars(); };
+        container.appendChild(btn);
+      }
+    });
+  }
+
+  // Tabs
+  function switchTab(tab) {
+    const tabs = ['survey','complaint','suggestion','praise','history'];
+    tabs.forEach(t => {
+      const panel = document.getElementById('panel-' + t);
+      const btn = document.getElementById('tab-' + t);
+      if (t === tab) {
+        panel.classList.remove('hidden');
+        panel.classList.add('fade-in');
+        btn.classList.add('active');
+        btn.style.background = 'rgba(99,102,241,0.25)';
+        btn.style.color = '#a5b4fc';
+        btn.style.borderColor = 'rgba(99,102,241,0.4)';
+        btn.setAttribute('aria-selected', 'true');
+      } else {
+        panel.classList.add('hidden');
+        btn.classList.remove('active');
+        btn.style.background = 'rgba(255,255,255,0.05)';
+        btn.style.color = '#7c85b3';
+        btn.style.borderColor = 'rgba(255,255,255,0.08)';
+        btn.setAttribute('aria-selected', 'false');
+      }
+    });
+  }
+
+  // Toast
+  function showToast(msg, type) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    const colors = { success: '#22c55e', error: '#ef4444', info: '#6366f1' };
+    t.className = 'toast-enter flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium shadow-lg';
+    t.style.cssText = `background: ${colors[type] || colors.info}; color: white; min-width: 250px;`;
+    const icons = { success: 'check-circle', error: 'x-circle', info: 'info' };
+    t.innerHTML = `<i data-lucide="${icons[type] || 'info'}" style="width:18px;height:18px;flex-shrink:0;"></i><span>${msg}</span>`;
+    c.appendChild(t);
+    lucide.createIcons();
+    setTimeout(() => { t.classList.replace('toast-enter','toast-exit'); setTimeout(() => t.remove(), 300); }, 3000);
+  }
+
+  // Survey submit
+  async function handleSurveySubmit(e) {
+    e.preventDefault();
+    if (currentRecordCount() >= 999) { showToast('Limite de 999 registros atingido.', 'error'); return; }
+    const allRated = Object.values(ratings).every(r => r > 0);
+    if (!allRated) { showToast('Por favor, avalie todas as categorias.', 'error'); return; }
+    const rec = document.querySelector('input[name="recommend"]:checked');
+    if (!rec) { showToast('Indique se recomendaria o produto.', 'error'); return; }
+
+    const btn = document.getElementById('survey-submit');
+    btn.classList.add('submit-loading');
+    btn.querySelector('span').textContent = 'Enviando...';
+
+    const result = await window.dataSdk.create({
+      type: 'pesquisa',
+      name: document.getElementById('survey-name').value,
+      email: document.getElementById('survey-email').value,
+      rating_comfort: ratings.comfort,
+      rating_effectiveness: ratings.effectiveness,
+      rating_design: ratings.design,
+      rating_value: ratings.value,
+      rating_overall: ratings.overall,
+      recommend: rec.value,
+      usage_time: document.getElementById('survey-usage').value,
+      message: document.getElementById('survey-message').value || '',
+      created_at: new Date().toISOString()
+    });
+
+    btn.classList.remove('submit-loading');
+    btn.querySelector('span').textContent = 'Enviar Pesquisa';
+
+    if (result.isOk) {
+      const cfg = window.elementSdk ? window.elementSdk.config : {};
+      showToast(cfg.thank_you_message || defaultConfig.thank_you_message, 'success');
+      document.getElementById('survey-form').reset();
+      ratings = { comfort: 0, effectiveness: 0, design: 0, value: 0, overall: 0 };
+      buildStars();
+    } else {
+      showToast('Erro ao enviar. Tente novamente.', 'error');
+    }
+  }
+
+  // Generic submit (complaint, suggestion, praise)
+  async function handleGenericSubmit(e, type) {
+    e.preventDefault();
+    if (currentRecordCount() >= 999) { showToast('Limite de 999 registros atingido.', 'error'); return; }
+
+    const form = e.target;
+    const btn = form.querySelector('.generic-submit');
+    btn.classList.add('submit-loading');
+    btn.querySelector('span').textContent = 'Enviando...';
+
+    const prefix = type === 'reclamação' ? 'complaint' : type === 'sugestão' ? 'suggestion' : 'praise';
+    const result = await window.dataSdk.create({
+      type: type,
+      name: document.getElementById(prefix + '-name').value,
+      email: document.getElementById(prefix + '-email').value,
+      rating_comfort: 0, rating_effectiveness: 0, rating_design: 0, rating_value: 0, rating_overall: 0,
+      recommend: '',
+      usage_time: '',
+      message: document.getElementById(prefix + '-message').value,
+      created_at: new Date().toISOString()
+    });
+
+    btn.classList.remove('submit-loading');
+    const labels = { 'reclamação': 'Enviar Reclamação', 'sugestão': 'Enviar Sugestão', 'elogio': 'Enviar Elogio' };
+    btn.querySelector('span').textContent = labels[type];
+
+    if (result.isOk) {
+      const cfg = window.elementSdk ? window.elementSdk.config : {};
+      showToast(cfg.thank_you_message || defaultConfig.thank_you_message, 'success');
+      form.reset();
+    } else {
+      showToast('Erro ao enviar. Tente novamente.', 'error');
+    }
+  }
+
+  // Render history
+  function renderHistory(data) {
+    const list = document.getElementById('history-list');
+    const empty = document.getElementById('history-empty');
+    const sorted = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    if (sorted.length === 0) {
+      empty.classList.remove('hidden');
+      list.innerHTML = '';
+      return;
+    }
+    empty.classList.add('hidden');
+
+    const existing = new Map([...list.children].map(el => [el.dataset.id, el]));
+    const newIds = new Set(sorted.map(r => r.__backendId));
+
+    // Remove old
+    existing.forEach((el, id) => { if (!newIds.has(id)) el.remove(); });
+
+    sorted.forEach((record, idx) => {
+      const id = record.__backendId;
+      let el = list.querySelector(`[data-id="${id}"]`);
+      if (!el) {
+        el = document.createElement('div');
+        el.dataset.id = id;
+        el.className = 'rounded-xl p-4 transition-all';
+        el.style.cssText = 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);';
+      }
+
+      const typeColors = { pesquisa: '#6366f1', 'reclamação': '#f87171', 'sugestão': '#fbbf24', elogio: '#f472b6' };
+      const typeIcons = { pesquisa: 'clipboard-list', 'reclamação': 'alert-circle', 'sugestão': 'lightbulb', elogio: 'heart' };
+      const color = typeColors[record.type] || '#6366f1';
+      const date = new Date(record.created_at);
+      const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      let starsHtml = '';
+      if (record.type === 'pesquisa' && record.rating_overall > 0) {
+        starsHtml = '<div class="flex gap-0.5 mt-1">';
+        for (let i = 1; i <= 5; i++) {
+          starsHtml += `<svg width="14" height="14" viewBox="0 0 24 24" fill="${i <= record.rating_overall ? '#fbbf24' : 'none'}" stroke="${i <= record.rating_overall ? '#fbbf24' : '#4b5563'}" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+        }
+        starsHtml += '</div>';
+      }
+
+      el.innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full" style="background: ${color}22; color: ${color};">
+                <i data-lucide="${typeIcons[record.type]}" style="width:12px;height:12px;"></i>
+                ${record.type.charAt(0).toUpperCase() + record.type.slice(1)}
+              </span>
+              <span class="text-xs" style="color: #7c85b3;">${dateStr}</span>
+            </div>
+            <p class="text-sm font-medium" style="color: #e0e7ff;">${record.name}</p>
+            ${starsHtml}
+            ${record.message ? `<p class="text-xs mt-1 truncate" style="color: #9ca3af;">${record.message}</p>` : ''}
+          </div>
+        </div>`;
+
+      if (!list.children[idx] || list.children[idx].dataset.id !== id) {
+        if (list.children[idx]) {
+          list.insertBefore(el, list.children[idx]);
+        } else {
+          list.appendChild(el);
+        }
+      }
+    });
+
+    lucide.createIcons();
+  }
+
+  // Data SDK init
+  const dataHandler = {
+    onDataChanged(data) {
+      allData = data;
+      renderHistory(data);
+    }
+  };
+
+  // Element SDK
+  const elementImpl = {
+    defaultConfig,
+    onConfigChange: async (config) => {
+      const t = (k) => config[k] || defaultConfig[k];
+      const font = t('font_family');
+      const size = t('font_size');
+      const bg = t('background_color');
+      const text = t('text_color');
+      const primary = t('primary_action_color');
+      const secondary = t('secondary_action_color');
+
+      document.getElementById('app').style.background = `linear-gradient(135deg, ${bg} 0%, ${bg}ee 50%, ${bg}dd 100%)`;
+      document.getElementById('app').style.fontFamily = `${font}, sans-serif`;
+
+      const title = document.getElementById('main-title');
+      title.textContent = t('app_title');
+      title.style.color = text;
+      title.style.fontSize = `${size * 2.2}px`;
+
+      const sub = document.getElementById('main-subtitle');
+      sub.textContent = t('app_subtitle');
+      sub.style.color = secondary;
+      sub.style.fontSize = `${size * 1.2}px`;
+
+      const intro = document.getElementById('intro-text');
+      intro.textContent = t('survey_intro');
+      intro.style.fontSize = `${size * 0.9}px`;
+
+      document.querySelectorAll('h2').forEach(h => { h.style.color = text; h.style.fontSize = `${size * 1.4}px`; });
+      document.querySelectorAll('label').forEach(l => { l.style.fontSize = `${size * 0.9}px`; });
+      document.querySelectorAll('input, textarea, select').forEach(el => { el.style.fontSize = `${size}px`; });
+    },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); }},
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }},
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }},
+        { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); }},
+        { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); }}
+      ],
+      borderables: [],
+      fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }},
+      fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }}
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['app_title', config.app_title || defaultConfig.app_title],
+      ['app_subtitle', config.app_subtitle || defaultConfig.app_subtitle],
+      ['survey_intro', config.survey_intro || defaultConfig.survey_intro],
+      ['thank_you_message', config.thank_you_message || defaultConfig.thank_you_message]
+    ])
+  };
+
+  // Init
+  (async () => {
+    if (window.elementSdk) window.elementSdk.init(elementImpl);
+    const initResult = await window.dataSdk.init(dataHandler);
+    if (!initResult.isOk) console.error('Data SDK init failed');
+    buildStars();
+    lucide.createIcons();
+  })();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f06a51606a564cc',t:'MTc3Njg4MjA1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
